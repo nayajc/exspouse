@@ -1,0 +1,680 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>전배우자 유형 테스트 - 당신의 전 배우자는 어떤 유형일까요?</title>
+    <meta name="description" content="이혼 후 전 배우자의 성격 유형을 파악하고, 향후 관계 전략을 제안받아보세요!">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Pretendard:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/kakao-js-sdk/1.43.0/kakao.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #333;
+        }
+
+        .container {
+            max-width: 480px;
+            margin: 0 auto;
+            padding: 20px;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            border-radius: 24px;
+            padding: 32px 24px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            animation: slideUp 0.6s ease-out;
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 32px;
+        }
+
+        .logo {
+            font-size: 48px;
+            margin-bottom: 12px;
+        }
+
+        .title {
+            font-size: 24px;
+            font-weight: 700;
+            color: #2d3748;
+            margin-bottom: 8px;
+        }
+
+        .subtitle {
+            font-size: 16px;
+            color: #718096;
+            line-height: 1.5;
+        }
+
+        .progress-container {
+            margin-bottom: 24px;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: #e2e8f0;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #667eea, #764ba2);
+            transition: width 0.3s ease;
+            border-radius: 4px;
+        }
+
+        .progress-text {
+            text-align: center;
+            margin-top: 8px;
+            font-size: 14px;
+            color: #718096;
+        }
+
+        .question-container {
+            display: none;
+        }
+
+        .question-container.active {
+            display: block;
+        }
+
+        .question-number {
+            font-size: 14px;
+            font-weight: 600;
+            color: #667eea;
+            margin-bottom: 8px;
+        }
+
+        .question-text {
+            font-size: 18px;
+            font-weight: 600;
+            color: #2d3748;
+            margin-bottom: 24px;
+            line-height: 1.4;
+        }
+
+        .options {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .option {
+            background: #f7fafc;
+            border: 2px solid #e2e8f0;
+            border-radius: 16px;
+            padding: 16px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-size: 15px;
+            text-align: left;
+        }
+
+        .option:hover {
+            background: #edf2f7;
+            border-color: #cbd5e0;
+            transform: translateY(-2px);
+        }
+
+        .option.selected {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(102, 126, 234, 0.3);
+        }
+
+        .start-screen {
+            text-align: center;
+        }
+
+        .start-description {
+            font-size: 16px;
+            color: #4a5568;
+            line-height: 1.6;
+            margin-bottom: 32px;
+        }
+
+        .start-button, .next-button, .share-button {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            border-radius: 16px;
+            padding: 16px 32px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            width: 100%;
+            margin-top: 20px;
+        }
+
+        .start-button:hover, .next-button:hover, .share-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(102, 126, 234, 0.3);
+        }
+
+        .result-screen {
+            display: none;
+            text-align: center;
+        }
+
+        .result-emoji {
+            font-size: 80px;
+            margin-bottom: 16px;
+        }
+
+        .result-type {
+            font-size: 24px;
+            font-weight: 700;
+            color: #2d3748;
+            margin-bottom: 8px;
+        }
+
+        .result-description {
+            font-size: 16px;
+            color: #4a5568;
+            line-height: 1.6;
+            margin-bottom: 24px;
+        }
+
+        .result-tips {
+            background: #f0f4f8;
+            border-radius: 16px;
+            padding: 20px;
+            margin-bottom: 24px;
+            text-align: left;
+        }
+
+        .tips-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: #2d3748;
+            margin-bottom: 12px;
+        }
+
+        .tips-content {
+            font-size: 14px;
+            color: #4a5568;
+            line-height: 1.5;
+        }
+
+        .contact-info {
+            background: linear-gradient(135deg, #f093fb, #f5576c);
+            color: white;
+            border-radius: 16px;
+            padding: 20px;
+            margin-bottom: 24px;
+        }
+
+        .contact-title {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        .contact-details {
+            font-size: 14px;
+            opacity: 0.9;
+        }
+
+        .share-buttons {
+            display: flex;
+            gap: 12px;
+            margin-top: 20px;
+        }
+
+        .share-button {
+            flex: 1;
+            font-size: 14px;
+            padding: 12px;
+        }
+
+        .restart-button {
+            background: transparent;
+            color: #667eea;
+            border: 2px solid #667eea;
+            border-radius: 16px;
+            padding: 12px 24px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            width: 100%;
+            margin-top: 12px;
+        }
+
+        .restart-button:hover {
+            background: #667eea;
+            color: white;
+        }
+
+        @media (max-width: 480px) {
+            .container {
+                padding: 16px;
+            }
+            
+            .card {
+                padding: 24px 20px;
+            }
+            
+            .title {
+                font-size: 20px;
+            }
+            
+            .question-text {
+                font-size: 16px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="card">
+            <!-- 시작 화면 -->
+            <div id="startScreen" class="start-screen">
+                <div class="header">
+                    <div class="logo">💔</div>
+                    <h1 class="title">전배우자 유형 테스트</h1>
+                    <p class="subtitle">당신의 전 배우자는 어떤 유형일까요?</p>
+                </div>
+                <div class="start-description">
+                    이혼 또는 별거 후 전 배우자의 성격과 패턴을 분석하여<br>
+                    향후 관계 전략을 제안해드립니다! 💪<br><br>
+                    <strong>총 8문항</strong>으로 구성된 간단한 테스트입니다.
+                </div>
+                <button class="start-button" onclick="startTest()">테스트 시작하기 ✨</button>
+            </div>
+
+            <!-- 진행률 표시 -->
+            <div id="progressContainer" class="progress-container" style="display: none;">
+                <div class="progress-bar">
+                    <div class="progress-fill" id="progressFill"></div>
+                </div>
+                <div class="progress-text" id="progressText">1 / 8</div>
+            </div>
+
+            <!-- 질문 화면 -->
+            <div id="questionScreen" style="display: none;">
+                <div class="question-container active" id="question1">
+                    <div class="question-number">Q1.</div>
+                    <div class="question-text">🗣️ 전 배우자는 대화를 할 때...</div>
+                    <div class="options">
+                        <div class="option" onclick="selectOption(1, 'talkative')" data-value="talkative">일방적으로 말한다</div>
+                        <div class="option" onclick="selectOption(1, 'pretend')" data-value="pretend">듣는 척만 한다</div>
+                        <div class="option" onclick="selectOption(1, 'avoid')" data-value="avoid">회피한다</div>
+                        <div class="option" onclick="selectOption(1, 'discuss')" data-value="discuss">차분히 논의한다</div>
+                    </div>
+                </div>
+
+                <div class="question-container" id="question2">
+                    <div class="question-number">Q2.</div>
+                    <div class="question-text">💥 갈등이 생기면...</div>
+                    <div class="options">
+                        <div class="option" onclick="selectOption(2, 'shout')" data-value="shout">큰소리부터 낸다</div>
+                        <div class="option" onclick="selectOption(2, 'cut')" data-value="cut">연락을 끊는다</div>
+                        <div class="option" onclick="selectOption(2, 'escape')" data-value="escape">피한다</div>
+                        <div class="option" onclick="selectOption(2, 'mediate')" data-value="mediate">중재자를 찾는다</div>
+                    </div>
+                </div>
+
+                <div class="question-container" id="question3">
+                    <div class="question-number">Q3.</div>
+                    <div class="question-text">🧠 상대는 내 감정을...</div>
+                    <div class="options">
+                        <div class="option" onclick="selectOption(3, 'no_empathy')" data-value="no_empathy">전혀 공감하지 않았다</div>
+                        <div class="option" onclick="selectOption(3, 'good_empathy')" data-value="good_empathy">잘 공감했다</div>
+                        <div class="option" onclick="selectOption(3, 'selfish')" data-value="selfish">자기중심적이었다</div>
+                    </div>
+                </div>
+
+                <div class="question-container" id="question4">
+                    <div class="question-number">Q4.</div>
+                    <div class="question-text">💼 경제적 책임은...</div>
+                    <div class="options">
+                        <div class="option" onclick="selectOption(4, 'my_burden')" data-value="my_burden">대부분 내가 졌다</div>
+                        <div class="option" onclick="selectOption(4, 'shared')" data-value="shared">서로 나눴다</div>
+                        <div class="option" onclick="selectOption(4, 'avoided')" data-value="avoided">거의 회피했다</div>
+                    </div>
+                </div>
+
+                <div class="question-container" id="question5">
+                    <div class="question-number">Q5.</div>
+                    <div class="question-text">🍼 아이 양육에 대해...</div>
+                    <div class="options">
+                        <div class="option" onclick="selectOption(5, 'indifferent')" data-value="indifferent">무관심했다</div>
+                        <div class="option" onclick="selectOption(5, 'interfere')" data-value="interfere">과도하게 간섭했다</div>
+                        <div class="option" onclick="selectOption(5, 'cooperative')" data-value="cooperative">공동으로 노력했다</div>
+                        <div class="option" onclick="selectOption(5, 'neglect')" data-value="neglect">방임하거나 독단적이었다</div>
+                    </div>
+                </div>
+
+                <div class="question-container" id="question6">
+                    <div class="question-number">Q6.</div>
+                    <div class="question-text">🤥 거짓말이나 숨김 행동은...</div>
+                    <div class="options">
+                        <div class="option" onclick="selectOption(6, 'frequent')" data-value="frequent">자주 있었다</div>
+                        <div class="option" onclick="selectOption(6, 'rare')" data-value="rare">거의 없었다</div>
+                        <div class="option" onclick="selectOption(6, 'unknown')" data-value="unknown">몰라서 모르겠다</div>
+                    </div>
+                </div>
+
+                <div class="question-container" id="question7">
+                    <div class="question-number">Q7.</div>
+                    <div class="question-text">💬 문제 후 사과는?</div>
+                    <div class="options">
+                        <div class="option" onclick="selectOption(7, 'no_apology')" data-value="no_apology">안 한다</div>
+                        <div class="option" onclick="selectOption(7, 'formal')" data-value="formal">형식적이다</div>
+                        <div class="option" onclick="selectOption(7, 'sincere')" data-value="sincere">진심으로 한다</div>
+                    </div>
+                </div>
+
+                <div class="question-container" id="question8">
+                    <div class="question-number">Q8.</div>
+                    <div class="question-text">🧍‍♂️ 본인의 감정이나 삶에 집중하는 경향은...</div>
+                    <div class="options">
+                        <div class="option" onclick="selectOption(8, 'dependent')" data-value="dependent">지나치게 의존적이었다</div>
+                        <div class="option" onclick="selectOption(8, 'independent')" data-value="independent">독립적이었다</div>
+                        <div class="option" onclick="selectOption(8, 'indifferent')" data-value="indifferent">무관심했다</div>
+                    </div>
+                </div>
+
+                <button class="next-button" id="nextButton" onclick="nextQuestion()" style="display: none;">다음 질문</button>
+            </div>
+
+            <!-- 결과 화면 -->
+            <div id="resultScreen" class="result-screen">
+                <div class="result-emoji" id="resultEmoji"></div>
+                <div class="result-type" id="resultType"></div>
+                <div class="result-description" id="resultDescription"></div>
+                <div class="result-tips">
+                    <div class="tips-title">💡 대처 전략</div>
+                    <div class="tips-content" id="resultTips"></div>
+                </div>
+                <div class="contact-info">
+                    <div class="contact-title">📞 전문 상담</div>
+                    <div class="contact-details">오수진 변호사<br>02-6953-6325</div>
+                </div>
+                <div class="share-buttons">
+                    <button class="share-button" onclick="shareKakao()">카카오톡 공유</button>
+                    <button class="share-button" onclick="shareUrl()">링크 복사</button>
+                </div>
+                <button class="restart-button" onclick="restartTest()">다시 테스트하기</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 카카오 SDK 초기화 (실제 앱 키로 교체하세요)
+        const KAKAO_APP_KEY = 'ae8e67a02449e510a539e1947d38323d'; // 발급받은 JavaScript 키로 교체
+        
+        if (typeof Kakao !== 'undefined' && KAKAO_APP_KEY !== 'ae8e67a02449e510a539e1947d38323d') {
+            Kakao.init(KAKAO_APP_KEY);
+        }
+
+        let currentQuestion = 1;
+        let answers = {};
+        let totalQuestions = 8;
+
+        const resultTypes = {
+            avoidant: {
+                emoji: "🎭",
+                name: "회피형 스펀지",
+                description: "감정을 피하고 현실을 도피하는 경향이 강합니다. 직접적인 대화보다는 회피와 침묵으로 문제를 처리하려고 합니다.",
+                tips: "감정보다는 논리적 접근이 필요합니다. 구체적인 사실과 데이터를 바탕으로 대화하세요. 감정적 압박보다는 시간을 두고 천천히 접근하는 것이 효과적입니다."
+            },
+            explosive: {
+                emoji: "💣",
+                name: "감정폭발형 로켓",
+                description: "분노와 감정의 과잉 반응을 보이며, 갈등 상황에서 격렬하게 반응합니다. 감정 조절에 어려움을 겪는 유형입니다.",
+                tips: "냉정한 중재자가 필요합니다. 감정이 격해질 때는 시간을 두고 진정된 후에 대화하세요. 서면 소통이나 제3자를 통한 의사소통이 도움이 됩니다."
+            },
+            calculating: {
+                emoji: "🧊",
+                name: "냉철한 계산형",
+                description: "감정 표현이 적고 매우 이성적입니다. 모든 것을 논리와 이익을 바탕으로 판단하며, 감정적 교감이 부족합니다.",
+                tips: "데이터와 사실 기반의 접근이 유리합니다. 감정적 호소보다는 구체적인 계획과 합리적 제안을 준비하세요. 법적 근거와 명확한 조건이 중요합니다."
+            },
+            impulsive: {
+                emoji: "🌪️",
+                name: "충동형 드리블러",
+                description: "계획성이 부족하고 말을 자주 바꿉니다. 즉흥적이고 일관성이 없어 예측하기 어려운 행동을 보입니다.",
+                tips: "모든 약속과 대화는 기록으로 남기세요. 증거 자료를 확보하는 것이 중요하며, 구체적인 일정과 조건을 명시한 서면 합의가 필요합니다."
+            },
+            cooperative: {
+                emoji: "🌈",
+                name: "협력형 평화주의자",
+                description: "조율이 가능하고 협상에 긍정적인 태도를 보입니다. 평화로운 해결을 선호하며 상호 이해를 추구합니다.",
+                tips: "공동 양육이나 재산 분할 협의에 가장 적합한 유형입니다. 상호 존중을 바탕으로 한 대화와 합리적 타협이 가능합니다. 중재 서비스 활용을 권장합니다."
+            }
+        };
+
+        function startTest() {
+            document.getElementById('startScreen').style.display = 'none';
+            document.getElementById('progressContainer').style.display = 'block';
+            document.getElementById('questionScreen').style.display = 'block';
+            updateProgress();
+        }
+
+        function selectOption(questionNum, value) {
+            answers[questionNum] = value;
+            
+            // 선택된 옵션 시각적 표시
+            const options = document.querySelectorAll(`#question${questionNum} .option`);
+            options.forEach(option => option.classList.remove('selected'));
+            event.target.classList.add('selected');
+            
+            // 다음 버튼 표시
+            document.getElementById('nextButton').style.display = 'block';
+        }
+
+        function nextQuestion() {
+            if (currentQuestion < totalQuestions) {
+                // 현재 질문 숨기기
+                document.getElementById(`question${currentQuestion}`).classList.remove('active');
+                
+                currentQuestion++;
+                
+                // 다음 질문 표시
+                document.getElementById(`question${currentQuestion}`).classList.add('active');
+                
+                // 다음 버튼 숨기기
+                document.getElementById('nextButton').style.display = 'none';
+                
+                updateProgress();
+            } else {
+                showResult();
+            }
+        }
+
+        function updateProgress() {
+            const progress = (currentQuestion / totalQuestions) * 100;
+            document.getElementById('progressFill').style.width = progress + '%';
+            document.getElementById('progressText').textContent = `${currentQuestion} / ${totalQuestions}`;
+        }
+
+        function calculateResult() {
+            let scores = {
+                avoidant: 0,
+                explosive: 0,
+                calculating: 0,
+                impulsive: 0,
+                cooperative: 0
+            };
+
+            // 점수 계산 로직
+            if (answers[1] === 'avoid') scores.avoidant += 2;
+            if (answers[1] === 'talkative') scores.explosive += 2;
+            if (answers[1] === 'pretend') scores.calculating += 1;
+            if (answers[1] === 'discuss') scores.cooperative += 2;
+
+            if (answers[2] === 'shout') scores.explosive += 3;
+            if (answers[2] === 'escape') scores.avoidant += 2;
+            if (answers[2] === 'cut') scores.impulsive += 2;
+            if (answers[2] === 'mediate') scores.cooperative += 3;
+
+            if (answers[3] === 'no_empathy') scores.calculating += 2;
+            if (answers[3] === 'selfish') scores.explosive += 1;
+            if (answers[3] === 'good_empathy') scores.cooperative += 3;
+
+            if (answers[4] === 'avoided') scores.avoidant += 2;
+            if (answers[4] === 'my_burden') scores.calculating += 1;
+            if (answers[4] === 'shared') scores.cooperative += 2;
+
+            if (answers[5] === 'indifferent') scores.avoidant += 2;
+            if (answers[5] === 'interfere') scores.explosive += 2;
+            if (answers[5] === 'cooperative') scores.cooperative += 3;
+            if (answers[5] === 'neglect') scores.impulsive += 2;
+
+            if (answers[6] === 'frequent') scores.impulsive += 3;
+            if (answers[6] === 'rare') scores.cooperative += 2;
+            if (answers[6] === 'unknown') scores.calculating += 1;
+
+            if (answers[7] === 'no_apology') scores.calculating += 2;
+            if (answers[7] === 'formal') scores.avoidant += 1;
+            if (answers[7] === 'sincere') scores.cooperative += 3;
+
+            if (answers[8] === 'dependent') scores.explosive += 1;
+            if (answers[8] === 'independent') scores.calculating += 1;
+            if (answers[8] === 'indifferent') scores.avoidant += 2;
+
+            // 가장 높은 점수의 유형 반환
+            return Object.keys(scores).reduce((a, b) => scores[a] > scores[b] ? a : b);
+        }
+
+        function showResult() {
+            const resultType = calculateResult();
+            const result = resultTypes[resultType];
+
+            document.getElementById('questionScreen').style.display = 'none';
+            document.getElementById('progressContainer').style.display = 'none';
+            
+            document.getElementById('resultEmoji').textContent = result.emoji;
+            document.getElementById('resultType').textContent = result.name;
+            document.getElementById('resultDescription').textContent = result.description;
+            document.getElementById('resultTips').textContent = result.tips;
+            
+            document.getElementById('resultScreen').style.display = 'block';
+        }
+
+        function shareKakao() {
+            const resultType = calculateResult();
+            const result = resultTypes[resultType];
+            
+            const shareTitle = '전배우자 유형 테스트 결과!';
+            const shareText = `${result.emoji} ${result.name}\n\n${result.description}`;
+            const shareUrl = window.location.href;
+            
+            // 카카오톡 공유 기능 (SDK 사용)
+            if (typeof Kakao !== 'undefined' && Kakao.isInitialized()) {
+                Kakao.Share.sendDefault({
+                    objectType: 'feed',
+                    content: {
+                        title: shareTitle,
+                        description: shareText,
+                        imageUrl: 'https://via.placeholder.com/800x400/667eea/ffffff?text=💔+전배우자+유형+테스트', // 실제 이미지 URL로 교체
+                        link: {
+                            mobileWebUrl: shareUrl,
+                            webUrl: shareUrl,
+                        },
+                    },
+                    buttons: [
+                        {
+                            title: '나도 테스트하기',
+                            link: {
+                                mobileWebUrl: shareUrl,
+                                webUrl: shareUrl,
+                            },
+                        },
+                    ],
+                });
+            } else {
+                // 카카오톡 앱이 없거나 SDK 초기화 실패 시 대체 방법
+                if (navigator.share) {
+                    navigator.share({
+                        title: shareTitle,
+                        text: shareText,
+                        url: shareUrl
+                    });
+                } else {
+                    // 카카오톡 스토리 공유 (앱 키 불필요)
+                    const kakaoStoryUrl = `https://story.kakao.com/share?url=${encodeURIComponent(shareUrl)}&text=${encodeURIComponent(shareTitle + '\n\n' + shareText)}`;
+                    window.open(kakaoStoryUrl, '_blank', 'width=600,height=400');
+                }
+            }
+        }
+
+        function shareUrl() {
+            const url = window.location.href;
+            if (navigator.clipboard) {
+                navigator.clipboard.writeText(url).then(() => {
+                    alert('링크가 복사되었습니다! 📋');
+                });
+            } else {
+                // 구버전 브라우저 대응
+                const textArea = document.createElement('textarea');
+                textArea.value = url;
+                document.body.appendChild(textArea);
+                textArea.select();
+                document.execCommand('copy');
+                document.body.removeChild(textArea);
+                alert('링크가 복사되었습니다! 📋');
+            }
+        }
+
+        function restartTest() {
+            currentQuestion = 1;
+            answers = {};
+            
+            // 모든 선택 초기화
+            document.querySelectorAll('.option').forEach(option => {
+                option.classList.remove('selected');
+            });
+            
+            // 모든 질문 숨기기
+            document.querySelectorAll('.question-container').forEach(container => {
+                container.classList.remove('active');
+            });
+            
+            // 첫 번째 질문 활성화
+            document.getElementById('question1').classList.add('active');
+            
+            // 화면 전환
+            document.getElementById('resultScreen').style.display = 'none';
+            document.getElementById('startScreen').style.display = 'block';
+        }
+    </script>
+</body>
+</html>
